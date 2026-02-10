@@ -182,9 +182,22 @@ def main():
     for output_dir in [args.output_train, args.output_validation, args.output_test]:
         os.makedirs(output_dir, exist_ok=True)
     
-    train.to_csv(os.path.join(args.output_train, 'train.csv'), index=False)
-    val.to_csv(os.path.join(args.output_validation, 'validation.csv'), index=False)
-    test.to_csv(os.path.join(args.output_test, 'test.csv'), index=False)
+    # Move target column to first position (SageMaker XGBoost requirement)
+    cols = ['Lapsed'] + [c for c in train.columns if c != 'Lapsed']
+    train = train[cols]
+    val = val[cols]
+    test = test[cols]
+    
+    # Move target column to first position (SageMaker XGBoost requirement)
+    cols = ['Lapsed'] + [c for c in train.columns if c != 'Lapsed']
+    train = train[cols]
+    val = val[cols]
+    test = test[cols]
+
+    # Save without headers (SageMaker XGBoost requirement)
+    train.to_csv(os.path.join(args.output_train, 'train.csv'), index=False, header=False)
+    val.to_csv(os.path.join(args.output_validation, 'validation.csv'), index=False, header=False)
+    test.to_csv(os.path.join(args.output_test, 'test.csv'), index=False, header=False)
     
     logger.info(f"Saved train data to {args.output_train}")
     logger.info(f"Saved validation data to {args.output_validation}")
